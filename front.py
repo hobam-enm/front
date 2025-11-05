@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 # =========================================================
-# DIMA 포털 — 리디자인 버전 (4-Grid Floating Layout)
+# DIMA 포털 — Horizontal Floating Cards (1-row)
 # =========================================================
-# 기능 요약:
-# - 비밀번호 게이트 (Secrets)
-# - 4개 고정 카드 (사이트 3,4는 더미로 주석 포함)
-# - 이미지 중앙 기준 crop-fit
-# - 이미지·제목 클릭 시 바로 이동
-# - 플로팅 글래스 카드 UI
+# 기능:
+# - 비밀번호 게이트(Secrets)
+# - 4개 고정 카드: 사이트1/사이트2/사이트3/사이트4
+# - 이미지 중앙 기준 크롭(object-fit: cover)
+# - 이미지 or 제목 클릭 시 바로 이동 (버튼 없음)
+# - 가로 1행 수평 스크롤, 카드 겹침 방지
 #
-# 🔐 Secrets (TOML)
+# 🔐 Secrets (TOML 예시)
 # [apps]
 # dashboard = "https://dima-ytchatbot.streamlit.app/"
 # ytcc      = "https://dima-ytchatbot.streamlit.app/"
-# site3     = ""  # 나중에 추가 가능
-# site4     = ""  # 나중에 추가 가능
+# site3     = ""  # (준비중) 나중에 URL 넣으면 자동 활성화
+# site4     = ""  # (준비중) 나중에 URL 넣으면 자동 활성화
 #
 # [apps_img]
 # dashboard = "https://images.unsplash.com/photo-1518779578993-ec3579fee39f"
@@ -24,6 +24,7 @@
 #
 # [auth]
 # frontpage_password = "네_비번"
+# # token = "선택_직접링크토큰"  # ?key=<token>으로 바로 입장
 # =========================================================
 
 import hmac
@@ -40,15 +41,17 @@ st.set_page_config(page_title="DIMA 포털", page_icon="🧭", layout="wide")
 PW_SECRET = st.secrets.get("auth", {}).get("frontpage_password")
 TOKEN_SECRET = st.secrets.get("auth", {}).get("token")
 
-try:
-    qs_key = st.query_params.get("key", "")
-except Exception:
+def _qs_token() -> str:
     try:
-        qs_key = st.experimental_get_query_params().get("key", [""])[0]
+        return st.query_params.get("key", "")
     except Exception:
-        qs_key = ""
+        try:
+            return st.experimental_get_query_params().get("key", [""])[0]
+        except Exception:
+            return ""
 
-if TOKEN_SECRET and qs_key and hmac.compare_digest(str(qs_key), str(TOKEN_SECRET)):
+_qs = _qs_token()
+if TOKEN_SECRET and _qs and hmac.compare_digest(str(_qs), str(TOKEN_SECRET)):
     st.session_state["_authed"] = True
 
 if not st.session_state.get("_authed", False):
@@ -63,142 +66,173 @@ if not st.session_state.get("_authed", False):
     st.stop()
 
 # -------------------------
-# 메타정보 (4개 고정)
+# 메타 (표시 문구)
 # -------------------------
 APP_META = {
-    "dashboard": {
-        "title": "📊 드라마 대시보드",
-        "desc": "TV/티빙/디지털 통합 성과",
-    },
-    "ytcc": {
-        "title": "💬 유튜브 댓글 분석 챗봇",
-        "desc": "수집·요약·감성·키워드 시각화",
-    },
-    "site3": {
-        "title": "🧩 사이트 3 (준비중)",
-        "desc": "추가 예정 페이지",
-    },
-    "site4": {
-        "title": "🧪 사이트 4 (준비중)",
-        "desc": "추가 예정 페이지",
-    },
+    "dashboard": {"title": "📊 드라마 대시보드", "desc": "TV/티빙/디지털 통합 성과"},
+    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "수집·요약·감성·키워드 시각화"},
+    "site3":     {"title": "🧩 사이트 3 (준비중)", "desc": "추가 예정 페이지"},
+    "site4":     {"title": "🧪 사이트 4 (준비중)", "desc": "추가 예정 페이지"},
 }
 
-def get_url(k): 
-    try: return st.secrets["apps"].get(k, "")
+def url_of(k: str) -> str:
+    try: return st.secrets["apps"].get(k, "").strip()
     except: return ""
 
-def get_img(k):
-    try: 
-        return st.secrets["apps_img"].get(k, "")
-    except: 
+def img_of(k: str) -> str:
+    try:
+        u = st.secrets["apps_img"].get(k, "").strip()
+        return u if u else "https://images.unsplash.com/photo-1507842217343-583bb7270b66"
+    except:
         return "https://images.unsplash.com/photo-1507842217343-583bb7270b66"
 
 # -------------------------
 # 헤더
 # -------------------------
-st.markdown("<h1 style='text-align:center;margin-top:-10px;'>🧭 DIMA 포털</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;color:#AAA;'>디지털마케팅팀 통합 진입점</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;margin-top:-6px;'>🧭 DIMA 포털</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;opacity:0.7;'>디지털마케팅팀 통합 진입점</p>", unsafe_allow_html=True)
 st.write("")
 
 # -------------------------
-# 스타일 (플로팅 카드)
+# 스타일 (1행 · 수평 스크롤 · 플로팅 카드)
 # -------------------------
 st.markdown("""
 <style>
-  .app-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(300px, 1fr));
-    gap: 32px;
-    justify-items: center;
-    margin-top: 30px;
+  /* 행 전체: 가로 스크롤 */
+  .row-scroll {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 4px 18px 4px;
+    scroll-snap-type: x mandatory;
   }
+  .row-scroll::-webkit-scrollbar { height: 10px; }
+  .row-scroll::-webkit-scrollbar-thumb {
+    background: rgba(128,128,128,.35); border-radius: 999px;
+  }
+  .row-scroll::-webkit-scrollbar-track { background: transparent; }
+
+  /* 카드: 고정 폭 + 플로팅 */
   .card {
-    width: 100%;
-    max-width: 500px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
+    flex: 0 0 360px;          /* 고정 너비로 1행 정렬 */
+    width: 360px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.12);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px);
-    transition: transform .25s ease, box-shadow .25s ease;
+    scroll-snap-align: start;
+    transition: transform .2s ease, box-shadow .2s ease;
+    will-change: transform;
   }
-  .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  [data-theme="dark"] .card {
+    background: rgba(17,19,25,0.85);
+    border: 1px solid #2a2f3a;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
   }
+  .card:hover { transform: translateY(-4px); }
+
+  /* 썸네일: 중앙 기준 크롭 */
+  .thumb-wrap { width:100%; height: 220px; background:#0f1116; }
   .thumb {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
+    width: 100%; height: 100%;
+    object-fit: cover;        /* 비율 안맞으면 중앙 기준 잘라냄 */
     object-position: center;
-    display: block;
+    display:block;
   }
-  .body {
-    padding: 16px 20px 22px 20px;
-  }
+
+  /* 본문영역 */
+  .body { padding: 14px 18px 18px 18px; }
   .title {
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin: 6px 0;
-    color: white;
+    font-weight: 800; font-size: 1.05rem; line-height: 1.25rem;
+    margin: 8px 0 6px 0; color: inherit; /* 테마 상속 → 이모지+텍스트 모두 보이게 */
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .desc {
-    color: #C8CDD7;
-    font-size: 0.93rem;
+  .desc  {
+    margin: 0; opacity: .7; font-size: .92rem;
   }
-  a.card-link {
-    text-decoration: none;
-    color: inherit;
+
+  /* 링크 전체 클릭 */
+  a.card-link { text-decoration: none; color: inherit; display:block; }
+
+  /* 준비중 카드 비활성 */
+  .disabled { opacity: .55; pointer-events: none; }
+  .badge-coming {
+    position:absolute; top:10px; left:10px;
+    background: rgba(0,0,0,.65); color:#fff; font-size:.78rem; font-weight:700;
+    padding: 4px 8px; border-radius: 999px;
+  }
+
+  /* 카드 그룹(시각적 구역 분리) */
+  .zone {
+    margin: 8px 0 18px 0; padding: 6px 2px;
+  }
+  .zone-title {
+    font-weight: 800; opacity:.85; margin: 0 0 6px 6px;
   }
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 카드 렌더링 (2x2 고정)
+# 렌더링
 # -------------------------
-st.markdown('<div class="app-grid">', unsafe_allow_html=True)
+# 구역 1 — 사이트 1/2
+st.markdown('<div class="zone">', unsafe_allow_html=True)
+st.markdown('<div class="zone-title">주요 서비스</div>', unsafe_allow_html=True)
+st.markdown('<div class="row-scroll">', unsafe_allow_html=True)
 
-for key in ["dashboard", "ytcc", "site3", "site4"]:
-    meta = APP_META[key]
-    url = get_url(key)
-    img = get_img(key)
+for key in ["dashboard", "ytcc"]:
+    meta, url, img = APP_META[key], url_of(key), img_of(key)
+    html = f"""
+    <a class="card-link" href="{url}" target="_blank">
+      <div class="card">
+        <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
+        <div class="body">
+          <div class="title">{meta['title']}</div>
+          <p class="desc">{meta['desc']}</p>
+        </div>
+      </div>
+    </a>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
-    # 링크 감싸기 (없으면 disabled 카드)
+st.markdown('</div></div>', unsafe_allow_html=True)
+
+# 구역 2 — 사이트 3/4 (더미, 나중에 URL 넣으면 자동 활성화)
+st.markdown('<div class="zone">', unsafe_allow_html=True)
+st.markdown('<div class="zone-title">준비 중</div>', unsafe_allow_html=True)
+st.markdown('<div class="row-scroll">', unsafe_allow_html=True)
+
+for key in ["site3", "site4"]:
+    meta, url, img = APP_META[key], url_of(key), img_of(key)
     if url:
-        st.markdown(
-            f"""
-            <a href="{url}" target="_blank" class="card-link">
-              <div class="card">
-                <img class="thumb" src="{img}" alt="{meta['title']}">
-                <div class="body">
-                  <div class="title">{meta['title']}</div>
-                  <div class="desc">{meta['desc']}</div>
-                </div>
-              </div>
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            f"""
-            <div class="card" style="opacity:0.5;pointer-events:none;">
-              <img class="thumb" src="{img}" alt="{meta['title']}">
-              <div class="body">
-                <div class="title">{meta['title']}</div>
-                <div class="desc">{meta['desc']}</div>
-              </div>
+        html = f"""
+        <a class="card-link" href="{url}" target="_blank">
+          <div class="card">
+            <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
+            <div class="body">
+              <div class="title">{meta['title']}</div>
+              <p class="desc">{meta['desc']}</p>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+          </div>
+        </a>
+        """
+    else:
+        html = f"""
+        <div class="card disabled" style="position:relative;">
+          <span class="badge-coming">COMING SOON</span>
+          <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
+          <div class="body">
+            <div class="title">{meta['title']}</div>
+            <p class="desc">{meta['desc']}</p>
+          </div>
+        </div>
+        """
+    st.markdown(html, unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown('</div></div>', unsafe_allow_html=True)
 
-# -------------------------
 # 푸터
-# -------------------------
-st.markdown("<hr style='margin-top:50px;opacity:0.2;'>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;color:#999;'>© DIMA 포털 · 다크모드 플로팅 UI</p>", unsafe_allow_html=True)
+st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 포털 · Horizontal Floating Cards</p>", unsafe_allow_html=True)
