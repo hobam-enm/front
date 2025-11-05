@@ -202,4 +202,4 @@ st_html(f"""
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 데이터 포털 · Horizontal Floating Cards</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 데이터 포털</p>", unsafe_allow_html=True)
