@@ -96,17 +96,6 @@ def build_cards(keys):
               </div>
             </a>
             """)
-        else:
-            cards.append(f"""
-            <div class="card disabled">
-              <span class="badge-coming">COMING SOON</span>
-              <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
-              <div class="body">
-                <div class="title">{meta['title']}</div>
-                <p class="desc">{meta['desc']}</p>
-              </div>
-            </div>
-            """)
     return "".join(cards)
 
 html_major = build_cards(["dashboard", "ytcc"])
