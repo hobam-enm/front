@@ -22,6 +22,45 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+#region [ 2.1 보안: 간단 비밀번호 게이트 ]
+# =====================================================
+import os, hmac
+
+# 시크릿 키: auth.frontpage_password (필수), auth.token (선택: 링크 토큰)
+PW_SECRET = (
+    st.secrets.get("auth", {}).get("frontpage_password")
+    if hasattr(st, "secrets") else None
+)
+TOKEN_SECRET = (
+    st.secrets.get("auth", {}).get("token")
+    if hasattr(st, "secrets") else None
+)
+
+# ?key=<token> 으로 접근 허용(선택)
+try:
+    qs_key = st.query_params.get("key", "") if hasattr(st, "query_params") else ""
+except Exception:
+    qs_key = ""
+if TOKEN_SECRET and qs_key and hmac.compare_digest(str(qs_key), str(TOKEN_SECRET)):
+    st.session_state["_authed"] = True
+
+# 비밀번호 폼
+if not st.session_state.get("_authed", False):
+    st.markdown("### 🔐 Access Required")
+    pw = st.text_input("비밀번호를 입력하세요", type="password", placeholder="••••••••")
+    c1, c2 = st.columns([1,3])
+    with c1:
+        if st.button("입장"):
+            if PW_SECRET and hmac.compare_digest(str(pw), str(PW_SECRET)):
+                st.session_state["_authed"] = True
+                st.rerun()
+            else:
+                st.error("비밀번호가 올바르지 않습니다.")
+    with c2:
+        st.caption("시크릿에 `auth.frontpage_password`를 설정하세요. (선택) `auth.token`으로 링크 토큰 허용")
+    st.stop()
+#endregion
+
 # ---- 기본 색상/스타일 (필요시 조정) ----
 PRIMARY = "#0057E7"
 ACCENT  = "#9B72CB"
@@ -143,6 +182,9 @@ with right:
     st.markdown("- Secrets 구성: " + ("✅ 감지됨" if has_secrets else "⚠️ 없음"))
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     st.markdown(f"- 서버 시각: {now}")
+    if st.button("로그아웃"):
+        st.session_state.pop("_authed", None)
+        st.rerun()
 
 # 편의 토글: 편집 모드
 with st.expander("⚙️ 링크 편집/설정 가이드", expanded=False):
