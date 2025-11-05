@@ -3,7 +3,7 @@ import streamlit as st
 from streamlit.components.v1 import html as st_html
 
 # ---------- page ----------
-st.set_page_config(page_title="DIMA 데이터 포털", page_icon="", layout="wide")
+st.set_page_config(page_title="DIMA 데이터 포털", page_icon="🧭", layout="wide")
 
 # ---------- auth gate ----------
 PW_SECRET = st.secrets.get("auth", {}).get("frontpage_password")
@@ -23,7 +23,7 @@ if TOKEN_SECRET and _qs and hmac.compare_digest(str(_qs), str(TOKEN_SECRET)):
     st.session_state["_authed"] = True
 
 if not st.session_state.get("_authed", False):
-    st.markdown("### 🔐 DIMA 포털 접근 권한 필요")
+    st.markdown("### 🔐 DIMA 데이터 포털 접근 권한 필요")
     pw = st.text_input("비밀번호를 입력하세요", type="password", placeholder="••••••••")
     if st.button("입장"):
         if PW_SECRET and hmac.compare_digest(str(pw), str(PW_SECRET)):
@@ -35,8 +35,8 @@ if not st.session_state.get("_authed", False):
 
 # ---------- meta ----------
 APP_META = {
-    "dashboard": {"title": "📊 드라마 대시보드", "desc": "드라마 주요지표 한눈에 비교분석"},
-    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "유튜브 댓글 AI요약 분석"},
+    "dashboard": {"title": "📊 드라마 대시보드", "desc": "TV/티빙/디지털 통합 성과"},
+    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "수집·요약·감성·키워드 시각화"},
     "site3":     {"title": "🧩 사이트 3 (준비중)", "desc": "추가 예정 페이지"},
     "site4":     {"title": "🧪 사이트 4 (준비중)", "desc": "추가 예정 페이지"},
 }
@@ -50,8 +50,33 @@ def img_of(k: str) -> str:
     except Exception:
         return "https://images.unsplash.com/photo-1507842217343-583bb7270b66"
 
-# ---------- header ----------
-st.markdown("<h1 style='text-align:center;margin-top:-6px;'> DIMA 데이터 포털</h1>", unsafe_allow_html=True)
+# ---------- header (gradient title) ----------
+st.markdown(
+    """
+    <style>
+      .grad-title {
+        font-weight: 900;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.15;
+        margin: 4px 0 2px 0;
+        background: linear-gradient(90deg, #6757e7 0%, #9B72CB 35%, #ff7bb0 70%, #ff8a4d 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: 0.2px;
+        text-align: center;
+      }
+      .grad-sub {
+        text-align: center;
+        opacity: .70;
+        margin-top: 2px;
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown("<div class='grad-title'>DIMA 데이터 포털</div>", unsafe_allow_html=True)
+st.markdown("<div class='grad-sub'>디지털마케팅팀 통합 진입점</div>", unsafe_allow_html=True)
 st.write("")
 
 # ---------- build cards html (1-row horizontal; 360x220 image; click-through) ----------
@@ -87,7 +112,7 @@ def build_cards(keys):
 html_major = build_cards(["dashboard", "ytcc"])
 html_pending = build_cards(["site3", "site4"])
 
-# ---------- one-shot render via components.html (no escaping issues) ----------
+# ---------- one-shot render via components.html ----------
 st_html(f"""
 <!DOCTYPE html>
 <html>
@@ -95,8 +120,8 @@ st_html(f"""
 <meta charset="utf-8" />
 <style>
   :root {{
-    --card-w: 360px;         /* 카드 고정 폭 */
-    --thumb-h: 220px;        /* 이미지 영역 높이 (중앙 크롭) */
+    --card-w: 360px;      /* 카드 폭 */
+    --thumb-h: 220px;     /* 이미지 영역 높이 (중앙 크롭) */
   }}
   body {{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto; }}
   .zone {{ margin: 8px 0 18px 0; padding: 0 6px; }}
@@ -174,4 +199,4 @@ st_html(f"""
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 포털 · Horizontal Floating Cards</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 데이터 포털 · Horizontal Floating Cards</p>", unsafe_allow_html=True)
