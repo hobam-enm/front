@@ -46,8 +46,7 @@ if not st.session_state.get("_authed", False):
 APP_META = {
     "dashboard": {"title": "📊 드라마 대시보드", "desc": "드라마 성과데이터 한눈에 비교하기"},
     "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
-    # ---- 새 사이트 추가 예시 (주석 해제해서 사용) ----
-    # "insight":  {"title": "📈 인사이트 허브", "desc": "리포트/브리핑/지표 모음"},
+    "insightwiki":  {"title": "📈 인사이트 허브", "desc": "리포트/브리핑/지표 모음"},
     # "toolbox":  {"title": "🧰 마케팅 도구함", "desc": "유틸/변환/자동화"},
 }
 
