@@ -45,14 +45,16 @@ if not st.session_state.get("_authed", False):
 # ---------- meta (타이틀/설명) ----------
 APP_META = {
     "dashboard": {"title": "📊 드라마 대시보드", "desc": "드라마 성과데이터 한눈에 비교하기"},
-    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
-    "insightwiki":  {"title": "📈 인사이트위키", "desc": "주제별 드라마 인사이트 분석"},
+    "ytcb":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"}
+    "ytcc":      {"title": "🔎 유튜브 댓글 수집기", "desc": "유튜브 댓글 수집"},
+    "insightwiki":  {"title": "💡 인사이트위키", "desc": "주제별 드라마 인사이트 분석"},
     # "toolbox":  {"title": "🧰 가나다라", "desc": "가나다라"},
 }
 
 # 노출 순서 (여기에 키를 추가/정렬)
 SITES = [
     "dashboard",
+    "ytcb",
     "ytcc",
     "insightwiki",  
     # "toolbox",    # ← 추가 시 여기 활성화
