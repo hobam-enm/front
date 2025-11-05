@@ -2,8 +2,7 @@ import hmac
 import streamlit as st
 from streamlit.components.v1 import html as st_html
 
-# =========================
-# DIMA 데이터 포털 (단일 파일)
+# =========================)
 # - 비번 게이트 (secrets)
 # - 1행 수평 스크롤 카드
 # - 이미지 중앙 크롭(360x220)
@@ -12,7 +11,7 @@ from streamlit.components.v1 import html as st_html
 # =========================
 
 # ---------- page ----------
-st.set_page_config(page_title="DIMA 데이터 포털", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="드라마 데이터 포털", page_icon="🧭", layout="wide")
 
 # ---------- auth gate ----------
 PW_SECRET = st.secrets.get("auth", {}).get("frontpage_password")
@@ -32,7 +31,7 @@ if TOKEN_SECRET and _qs and hmac.compare_digest(str(_qs), str(TOKEN_SECRET)):
     st.session_state["_authed"] = True
 
 if not st.session_state.get("_authed", False):
-    st.markdown("### 🔐 DIMA 데이터 포털 접근 권한 필요")
+    st.markdown("### 🔐 드라마 데이터 포털 접근 권한 필요")
     pw = st.text_input("비밀번호를 입력하세요", type="password", placeholder="••••••••")
     if st.button("입장"):
         if PW_SECRET and hmac.compare_digest(str(pw), str(PW_SECRET)):
@@ -99,7 +98,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown("<div class='grad-title'>DIMA 데이터 포털</div>", unsafe_allow_html=True)
+st.markdown("<div class='grad-title'>드라마 데이터 포털</div>", unsafe_allow_html=True)
 st.markdown("<div class='grad-sub'>문의: 미디어)디지털마케팅팀 데이터파트</div>", unsafe_allow_html=True)
 st.write("")
 
@@ -203,4 +202,4 @@ st_html(f"""
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:.65;'>© DIMA 데이터 포털</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:.65;'>© 드라마 데이터 포털</p>", unsafe_allow_html=True)
