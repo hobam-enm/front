@@ -3,7 +3,7 @@ import streamlit as st
 from streamlit.components.v1 import html as st_html
 
 # ---------- page ----------
-st.set_page_config(page_title="DIMA 포털", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="DIMA 데이터 포털", page_icon="", layout="wide")
 
 # ---------- auth gate ----------
 PW_SECRET = st.secrets.get("auth", {}).get("frontpage_password")
@@ -35,8 +35,8 @@ if not st.session_state.get("_authed", False):
 
 # ---------- meta ----------
 APP_META = {
-    "dashboard": {"title": "📊 드라마 대시보드", "desc": "TV/티빙/디지털 통합 성과"},
-    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "수집·요약·감성·키워드 시각화"},
+    "dashboard": {"title": "📊 드라마 대시보드", "desc": "드라마 주요지표 한눈에 비교분석"},
+    "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "유튜브 댓글 AI요약 분석"},
     "site3":     {"title": "🧩 사이트 3 (준비중)", "desc": "추가 예정 페이지"},
     "site4":     {"title": "🧪 사이트 4 (준비중)", "desc": "추가 예정 페이지"},
 }
@@ -51,8 +51,7 @@ def img_of(k: str) -> str:
         return "https://images.unsplash.com/photo-1507842217343-583bb7270b66"
 
 # ---------- header ----------
-st.markdown("<h1 style='text-align:center;margin-top:-6px;'>🧭 DIMA 포털</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;opacity:0.7;'>디지털마케팅팀 통합 진입점</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center;margin-top:-6px;'> DIMA 데이터 포털</h1>", unsafe_allow_html=True)
 st.write("")
 
 # ---------- build cards html (1-row horizontal; 360x220 image; click-through) ----------
