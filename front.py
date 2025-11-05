@@ -54,7 +54,7 @@ APP_META = {
 SITES = [
     "dashboard",
     "ytcc",
-    "insight",  
+    "insightwiki",  
     # "toolbox",    # ← 추가 시 여기 활성화
 ]
 
