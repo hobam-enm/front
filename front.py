@@ -68,6 +68,8 @@ OK      = "#15B097"
 WARN    = "#FFA500"
 ERR     = "#E84545"
 
+# ---- 앱 URL은 반드시 Secrets에서 관리 (Fallback 없음) ----
+DEFAULT_APP_URLS: Dict[str, str] = {}
 
 # ---- 사이드바 네비 표시명 ----
 APP_META: Dict[str, Dict[str, str]] = {
@@ -81,18 +83,32 @@ APP_META: Dict[str, Dict[str, str]] = {
     },
 }
 
-n
+# ---- 시크릿스 활용 가이드 ----
+SECRETS_TEMPLATE = {
+    "apps": {
+        "dashboard": "https://dima-ytchatbot.streamlit.app/",
+        "ytcc": "https://dima-ytchatbot.streamlit.app/"
+    },
+    "apps_img": {  # 카드 썸네일(선택)
+        "dashboard": "https://images.unsplash.com/photo-1518779578993-ec3579fee39f",
+        "ytcc": "https://images.unsplash.com/photo-1528360983277-13d401cdc186"
+    },
+    "auth": {
+        "frontpage_password": "비밀번호",
+        "token": "선택_직접링크토큰"
+    }
+}
+#endregion
 
 #region [ 3. 유틸 함수 ]
 # =====================================================
 
 def get_app_url(key: str) -> str:
+    """반드시 st.secrets['apps'][key]만 사용. 없으면 빈 문자열(비활성)."""
     try:
         url = st.secrets.get("apps", {}).get(key, "").strip()
     except Exception:
         url = ""
-    if not url:
-        url = DEFAULT_APP_URLS.get(key, "").strip()
     return url
 
 
@@ -201,7 +217,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 #region [ 7. 푸터 ]
 # =====================================================
-st.markdown("\n")
+st.markdown("
+")
 st.markdown("---")
 st.caption("Front Page v1.1 · 이미지 카드 레이아웃 · 다크모드 최적화")
 #endregion
