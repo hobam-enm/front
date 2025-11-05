@@ -68,46 +68,25 @@ OK      = "#15B097"
 WARN    = "#FFA500"
 ERR     = "#E84545"
 
-# ---- 앱 URL 기본값(시크릿스 없을 때 Fallback) ----
-DEFAULT_APP_URLS: Dict[str, str] = {
-    # ⚠️ 아래를 너의 실제 URL로 바꿔도 되고, st.secrets["apps"][key]로 관리해도 됨
-    "dashboard": "https://your-streamlit-cloud.app/overview",     # 📊 IP 성과 대시보드
-    "ytcc": "https://your-streamlit-cloud.app/ytcc_chatbot",      # 💬 유튜브 댓글 분석 챗봇
-    "gas": "https://script.google.com/macros/s/xxxxxxxx/exec",    # 🧰 Apps Script 취합/관리 웹앱(선택)
-}
 
 # ---- 사이드바 네비 표시명 ----
 APP_META: Dict[str, Dict[str, str]] = {
     "dashboard": {
-        "title": "📊 IP 성과 대시보드",
-        "desc": "TV/TVING/디지털/화제성 통합 KPI & 차트",
+        "title": "📊 드라마 대시보드",
+        "desc": "TV/티빙/디지털 통합 성과",
     },
     "ytcc": {
         "title": "💬 유튜브 댓글 분석 챗봇",
-        "desc": "수집·요약·감성·키워드 시각화(트리맵/버블)",
-    },
-    "gas": {
-        "title": "🧰 Apps Script 취합/관리",
-        "desc": "RAW_원본 취합, 소스 시트 관리, 로그 확인",
+        "desc": "수집·요약·감성·키워드 시각화",
     },
 }
 
-# ---- 시크릿스 활용 가이드 ----
-SECRETS_TEMPLATE = {
-    "apps": {
-        "dashboard": "https://your-streamlit-cloud.app/overview",
-        "ytcc": "https://your-streamlit-cloud.app/ytcc_chatbot",
-        "gas": "https://script.google.com/macros/s/xxxxxxxx/exec"
-    }
-}
-#endregion
+n
 
 #region [ 3. 유틸 함수 ]
 # =====================================================
 
 def get_app_url(key: str) -> str:
-    """st.secrets.apps[key] 우선 사용, 없으면 DEFAULT_APP_URLS.
-    빈 문자열이면 비활성화로 간주."""
     try:
         url = st.secrets.get("apps", {}).get(key, "").strip()
     except Exception:
@@ -117,50 +96,26 @@ def get_app_url(key: str) -> str:
     return url
 
 
-def check_health(url: str, timeout: float = 3.0) -> Dict[str, str]:
-    """간단한 헬스체크: HEAD→GET 순으로 시도. 상태/지연/메시지 반환."""
-    if not url:
-        return {"status": "disabled", "latency": "-", "msg": "URL 미설정"}
-    t0 = time.perf_counter()
+def get_app_image(key: str) -> str:
+    """시크릿의 apps_img[key] → 없으면 기본 이미지."""
     try:
-        try:
-            r = requests.head(url, timeout=timeout, allow_redirects=True)
-        except Exception:
-            r = requests.get(url, timeout=timeout, allow_redirects=True)
-        elapsed = (time.perf_counter() - t0) * 1000
-        code = r.status_code
-        if 200 <= code < 400:
-            return {"status": "ok", "latency": f"{elapsed:.0f} ms", "msg": f"HTTP {code}"}
-        return {"status": "warn", "latency": f"{elapsed:.0f} ms", "msg": f"HTTP {code}"}
-    except Exception as e:
-        elapsed = (time.perf_counter() - t0) * 1000
-        return {"status": "down", "latency": f"{elapsed:.0f} ms", "msg": str(e).split("\n")[0][:120]}
-
-
-def badge(status: str, text: str) -> str:
-    """상태 텍스트 뱃지(HTML)."""
-    color = {
-        "ok": OK,
-        "warn": WARN,
-        "down": ERR,
-        "disabled": "#8A8A8A",
-    }.get(status, WARN)
-    return f"""
-    <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:{color}20;color:{color};border:1px solid {color}55;">
-      {text}
-    </span>
-    """
+        u = st.secrets.get("apps_img", {}).get(key, "").strip()
+    except Exception:
+        u = ""
+    if not u:
+        # 아주 얕은 그라디언트 placeholder (data URI는 생략)
+        u = "https://images.unsplash.com/photo-1507842217343-583bb7270b66"
+    return u
 
 
 def open_link_button(label: str, url: str, key: str):
-    """외부 링크 버튼(새 탭). Streamlit 기본 버튼은 새탭 제어가 어려워 HTML 사용."""
     if not url:
         st.button(label, key=key, disabled=True)
         return
     st.markdown(
         f"""
         <a href="{url}" target="_blank" rel="noopener noreferrer">
-            <button style="padding:8px 14px;border:none;border-radius:12px;background:{PRIMARY};color:white;font-weight:600;cursor:pointer;">{label}</button>
+            <button style=\"padding:8px 14px;border:none;border-radius:12px;background:{PRIMARY};color:white;font-weight:600;cursor:pointer;\">{label}</button>
         </a>
         """,
         unsafe_allow_html=True,
@@ -168,30 +123,16 @@ def open_link_button(label: str, url: str, key: str):
 
 #endregion
 
-#region [ 4. 상단 헤더 & 사이드 정보 ]
+#region [ 4. 상단 헤더 ]
 # =====================================================
-left, right = st.columns([3, 2])
-with left:
-    st.markdown("## 🧭 Front Page — 앱 런처")
-    st.caption("대시보드/댓글분석/도구 웹앱으로 이동하는 허브 페이지")
-
-with right:
-    st.markdown("#### 환경 상태")
-    # 시크릿스 감지
-    has_secrets = bool(getattr(st, "secrets", {}))
-    st.markdown("- Secrets 구성: " + ("✅ 감지됨" if has_secrets else "⚠️ 없음"))
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"- 서버 시각: {now}")
+header_l, header_r = st.columns([5,1])
+with header_l:
+    st.markdown("## 🧭 Front Page — App Launcher")
+    st.caption("원하는 앱을 선택하세요")
+with header_r:
     if st.button("로그아웃"):
         st.session_state.pop("_authed", None)
         st.rerun()
-
-# 편의 토글: 편집 모드
-with st.expander("⚙️ 링크 편집/설정 가이드", expanded=False):
-    st.write("앱 URL은 `st.secrets['apps']` 또는 코드 상단 `DEFAULT_APP_URLS`로 관리합니다.")
-    st.code(SECRETS_TEMPLATE, language="json")
-    st.info("Streamlit Cloud에서는 Settings → Secrets에 위 구조로 저장하면 런타임에서 바로 반영됩니다.")
-
 #endregion
 
 #region [ 5. 카드 그리드 스타일 ]
@@ -201,26 +142,29 @@ st.markdown(
     <style>
       .grid {{
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
       }}
       .card {{
         background: #111319;
         border: 1px solid #2a2f3a;
-        border-radius: 18px;
-        padding: 16px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+        transition: transform .15s ease, box-shadow .15s ease;
       }}
-      .card h3 {{
-        margin: 0 0 8px 0;
+      .card:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.32);
       }}
-      .card p {{
-        margin: 6px 0 14px 0;
-        color: #C8CDD7;
+      .thumb {{
+        width: 100%; height: 168px; object-fit: cover; display:block;
+        background:#0f1116;
       }}
-      .row {{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }}
-      .row.space {{ justify-content: space-between; }}
-      .divider {{ height:1px; background:#262b34; margin:10px 0 14px 0; }}
+      .body {{ padding: 14px 16px; }}
+      .title {{ font-weight:700; font-size:1.05rem; margin:0 0 6px 0; }}
+      .desc {{ color:#C8CDD7; margin:0 0 12px 0; font-size:.92rem; }}
+      .row {{ display:flex; align-items:center; justify-content:space-between; gap:10px; }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -229,48 +173,35 @@ st.markdown(
 
 #region [ 6. 앱 카드 렌더링 ]
 # =====================================================
-
-apps_to_show: List[str] = list(APP_META.keys())  # 필요시 순서 조정
+apps_to_show: List[str] = list(APP_META.keys())
 
 st.markdown('<div class="grid">', unsafe_allow_html=True)
 for key in apps_to_show:
     meta = APP_META[key]
     url = get_app_url(key)
-    health = check_health(url)
-    status_html = badge(health["status"], health["msg"]) + "&nbsp;" + badge(health["status"], health["latency"]) if url else badge("disabled", "미설정")
+    img = get_app_image(key)
 
-    # 카드 내용
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown(f"<h3>{meta['title']}</h3>", unsafe_allow_html=True)
-    st.write(meta["desc"])  # 설명
+    st.markdown(f'<img class="thumb" src="{img}" alt="{meta["title"]}">', unsafe_allow_html=True)
+    st.markdown('<div class="body">', unsafe_allow_html=True)
+    st.markdown(f'<div class="title">{meta["title"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="desc">{meta["desc"]}</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="row space">', unsafe_allow_html=True)
-    st.markdown(status_html, unsafe_allow_html=True)
-    open_link_button("열기", url, key=f"open_{key}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-
-    # 추가 버튼들 (옵션)
-    cols = st.columns([1,1,1])
+    cols = st.columns([1,1])
     with cols[0]:
-        open_link_button("헬스체크 다시", url, key=f"re_{key}")
+        open_link_button("열기", url, key=f"open_{key}")
     with cols[1]:
-        st.button("URL 복사", key=f"copy_{key}", on_click=lambda u=url: st.session_state.update({f"copied_{key}": u}))
-        if st.session_state.get(f"copied_{key}"):
-            st.caption(st.session_state[f"copied_{key}"])
-    with cols[2]:
-        st.caption("관리: st.secrets['apps'][\"%s\"]" % key)
+        st.caption(url)
 
+    st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
-
 #endregion
 
 #region [ 7. 푸터 ]
 # =====================================================
 st.markdown("\n")
 st.markdown("---")
-st.caption("문의 : 디지털마케팅팀 데이터파트 · Front Page v1 · Theme optimized for dark mode")
+st.caption("Front Page v1.1 · 이미지 카드 레이아웃 · 다크모드 최적화")
 #endregion
