@@ -2,6 +2,15 @@ import hmac
 import streamlit as st
 from streamlit.components.v1 import html as st_html
 
+# =========================
+# DIMA 데이터 포털 (단일 파일)
+# - 비번 게이트 (secrets)
+# - 1행 수평 스크롤 카드
+# - 이미지 중앙 크롭(360x220)
+# - 이미지/제목 클릭 즉시 이동
+# - URL/이미지: 반드시 secrets에서만 관리
+# =========================
+
 # ---------- page ----------
 st.set_page_config(page_title="DIMA 데이터 포털", page_icon="🧭", layout="wide")
 
@@ -33,16 +42,30 @@ if not st.session_state.get("_authed", False):
             st.error("비밀번호가 올바르지 않습니다.")
     st.stop()
 
-# ---------- meta ----------
+# ---------- meta (타이틀/설명) ----------
 APP_META = {
     "dashboard": {"title": "📊 드라마 대시보드", "desc": "TV/티빙/디지털 통합 성과"},
     "ytcc":      {"title": "💬 유튜브 댓글 분석 챗봇", "desc": "수집·요약·감성·키워드 시각화"},
-    "site3":     {"title": "🧩 사이트 3 (준비중)", "desc": "추가 예정 페이지"},
-    "site4":     {"title": "🧪 사이트 4 (준비중)", "desc": "추가 예정 페이지"},
+    # ---- 새 사이트 추가 예시 (주석 해제해서 사용) ----
+    # "insight":  {"title": "📈 인사이트 허브", "desc": "리포트/브리핑/지표 모음"},
+    # "toolbox":  {"title": "🧰 마케팅 도구함", "desc": "유틸/변환/자동화"},
 }
+
+# 노출 순서 (여기에 키를 추가/정렬)
+SITES = [
+    "dashboard",
+    "ytcc",
+    # "insight",    # ← 추가 시 여기 활성화
+    # "toolbox",    # ← 추가 시 여기 활성화
+]
+
+# ---------- helpers ----------
 def url_of(k: str) -> str:
-    try: return st.secrets["apps"].get(k, "").strip()
-    except Exception: return ""
+    try:
+        return st.secrets["apps"].get(k, "").strip()
+    except Exception:
+        return ""
+
 def img_of(k: str) -> str:
     try:
         u = st.secrets["apps_img"].get(k, "").strip()
@@ -76,30 +99,31 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown("<div class='grad-title'>DIMA 데이터 포털</div>", unsafe_allow_html=True)
-st.markdown("<div class='grad-sub'>문의)디지털마케팅팀 데이터파트</div>", unsafe_allow_html=True)
+st.markdown("<div class='grad-sub'>디지털마케팅팀 통합 진입점</div>", unsafe_allow_html=True)
 st.write("")
 
-# ---------- build cards html (1-row horizontal; 360x220 image; click-through) ----------
+# ---------- build cards (URL이 비어 있으면 자동 생략) ----------
 def build_cards(keys):
     cards = []
     for k in keys:
-        meta, url, img = APP_META[k], url_of(k), img_of(k)
-        if url:
-            cards.append(f"""
-            <a class="card-link" href="{url}" target="_blank" rel="noopener noreferrer">
-              <div class="card">
-                <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
-                <div class="body">
-                  <div class="title">{meta['title']}</div>
-                  <p class="desc">{meta['desc']}</p>
-                </div>
-              </div>
-            </a>
-            """)
+        url = url_of(k)
+        if not url:  # URL 없으면 렌더링 스킵 (커밍순 영역 없음)
+            continue
+        meta, img = APP_META.get(k, {"title": k, "desc": ""}), img_of(k)
+        cards.append(f"""
+        <a class="card-link" href="{url}" target="_blank" rel="noopener noreferrer">
+          <div class="card">
+            <div class="thumb-wrap"><img class="thumb" src="{img}" alt="{meta['title']}"></div>
+            <div class="body">
+              <div class="title">{meta['title']}</div>
+              <p class="desc">{meta['desc']}</p>
+            </div>
+          </div>
+        </a>
+        """)
     return "".join(cards)
 
-html_major = build_cards(["dashboard", "ytcc"])
-html_pending = build_cards(["site3", "site4"])
+cards_html = build_cards(SITES)
 
 # ---------- one-shot render via components.html ----------
 st_html(f"""
@@ -116,6 +140,7 @@ st_html(f"""
   .zone {{ margin: 8px 0 18px 0; padding: 0 6px; }}
   .zone-title {{ font-weight: 800; opacity:.85; margin: 0 0 8px 6px; }}
 
+  /* 1행 수평 스크롤 컨테이너 */
   .row-scroll {{
     display: flex;
     gap: 24px;
@@ -127,6 +152,7 @@ st_html(f"""
   .row-scroll::-webkit-scrollbar-thumb {{ background: rgba(128,128,128,.35); border-radius: 999px; }}
   .row-scroll::-webkit-scrollbar-track {{ background: transparent; }}
 
+  /* 플로팅 카드 */
   .card {{
     position: relative;
     flex: 0 0 var(--card-w);
@@ -141,13 +167,8 @@ st_html(f"""
     will-change: transform;
   }}
   .card:hover {{ transform: translateY(-4px); }}
-  .disabled {{ opacity:.55; pointer-events:none; }}
-  .badge-coming {{
-    position:absolute; top:10px; left:10px;
-    background: rgba(0,0,0,.65); color:#fff; font-size:.78rem; font-weight:700;
-    padding: 4px 8px; border-radius: 999px;
-  }}
 
+  /* 이미지 중앙 크롭 */
   .thumb-wrap {{ width:100%; height: var(--thumb-h); background:#0f1116; }}
   .thumb {{
     width:100%; height:100%;
@@ -169,22 +190,15 @@ st_html(f"""
 <body>
 
 <div class="zone">
-  <div class="zone-title">주요 서비스</div>
+  <div class="zone-title">서비스</div>
   <div class="row-scroll">
-    {html_major}
-  </div>
-</div>
-
-<div class="zone">
-  <div class="zone-title">준비 중</div>
-  <div class="row-scroll">
-    {html_pending}
+    {cards_html}
   </div>
 </div>
 
 </body>
 </html>
-""", height=640, scrolling=True)
+""", height=420, scrolling=True)
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
