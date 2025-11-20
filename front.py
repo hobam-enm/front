@@ -35,19 +35,19 @@ if not st.session_state.get("_authed", False):
     st.stop()
 
 # ---------- meta ----------
-# ===== 서비스 메타데이터 설정 (신규 항목 추가됨) =====
+# ===== 서비스 메타데이터 설정 =====
 APP_META = {
     "dashboard":   {"title": "📊 드라마 대시보드",      "desc": "드라마 성과데이터 한눈에 비교하기"},
     "ytcb":        {"title": "💬 유튜브 댓글 분석 AI챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
     "ytcc":        {"title": "🔎 유튜브 댓글 수집기",    "desc": "유튜브 댓글 수집 및 정량 시각화"},
     "insightwiki": {"title": "💡 인사이트위키",          "desc": "주제별 드라마 인사이트 분석"},
     "actorwiki":   {"title": "💡 배우위키",              "desc": "주요 배우 프로필 및 반응분석"},
-    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},  
-    "wbriefing":   {"title": "📝 주간 시청자 브리핑",  "desc": "준비 중 (Coming Soon)"}, 
+    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},
+    "weekly_brief":{"title": "📝 주간 시청자 브리핑",    "desc": "준비 중 (Coming Soon)"},  # 신규 더미 카드
 }
 
-# ===== 카드 배치 구성 변경 (2개 행으로 분리) =====
-ROW1_KEYS = ["dashboard", "wbriefing","actorwiki", "insightwiki"]
+# ===== 카드 배치 구성 (1행에 신규 카드 추가) =====
+ROW1_KEYS = ["dashboard", "actorwiki", "insightwiki", "weekly_brief"]
 ROW2_KEYS = ["ytcb", "ytcc", "ytif"]
 
 def url_of(k: str) -> str:
@@ -93,8 +93,8 @@ def build_cards(keys):
     cards = []
     for k in keys:
         url = url_of(k)
-        # 'ytif'는 준비중이므로 URL이 없어도 카드를 렌더링 (임시 링크 #)
-        if k == "ytif" and not url:
+        # 'ytif'와 'weekly_brief'는 준비중이므로 URL이 없어도 카드를 렌더링 (임시 링크 #)
+        if (k == "ytif" or k == "weekly_brief") and not url:
             url = "#"
         
         if not url:
@@ -292,7 +292,7 @@ st_html(f"""
 
 </body>
 </html>
-""", height=900, scrolling=False) # 높이 조정: 카드 2줄이므로 여유있게
+""", height=900, scrolling=False)
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
