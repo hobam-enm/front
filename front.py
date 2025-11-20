@@ -2,13 +2,6 @@ import hmac
 import streamlit as st
 from streamlit.components.v1 import html as st_html
 
-# =========================
-# 드라마 데이터 포털 (단일 파일)
-# - 비번 게이트 (secrets)
-# - 1행 수평 카드 + 좌/우 오버레이 화살표 (hover: 자동 스크롤, click: 점프)
-# - 이미지 중앙 크롭(360x220), 카드 클릭 즉시 이동
-# - URL/이미지: 반드시 secrets에서만 관리
-# =========================
 
 # ---------- page ----------
 st.set_page_config(page_title="드라마 데이터 포털", page_icon="🧭", layout="wide")
@@ -42,14 +35,19 @@ if not st.session_state.get("_authed", False):
     st.stop()
 
 # ---------- meta ----------
+# ===== 서비스 메타데이터 설정 (신규 항목 추가됨) =====
 APP_META = {
     "dashboard":   {"title": "📊 드라마 대시보드",      "desc": "드라마 성과데이터 한눈에 비교하기"},
     "ytcb":        {"title": "💬 유튜브 댓글 분석 AI챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
     "ytcc":        {"title": "🔎 유튜브 댓글 수집기",    "desc": "유튜브 댓글 수집 및 정량 시각화"},
     "insightwiki": {"title": "💡 인사이트위키",          "desc": "주제별 드라마 인사이트 분석"},
     "actorwiki":   {"title": "💡 배우위키",              "desc": "주요 배우 프로필 및 반응분석"},
+    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},  # 신규 카드
 }
-SITES = ["dashboard", "ytcb", "ytcc", "actorwiki", "insightwiki"]
+
+# ===== 카드 배치 구성 변경 (2개 행으로 분리) =====
+ROW1_KEYS = ["dashboard", "actorwiki", "insightwiki"]
+ROW2_KEYS = ["ytcb", "ytcc", "ytif"]
 
 def url_of(k: str) -> str:
     try:
@@ -94,6 +92,10 @@ def build_cards(keys):
     cards = []
     for k in keys:
         url = url_of(k)
+        # 'ytif'는 준비중이므로 URL이 없어도 카드를 렌더링 (임시 링크 #)
+        if k == "ytif" and not url:
+            url = "#"
+        
         if not url:
             continue
         meta, img = APP_META.get(k, {"title": k, "desc": ""}), img_of(k)
@@ -110,7 +112,9 @@ def build_cards(keys):
         """)
     return "".join(cards)
 
-cards_html = build_cards(SITES)
+# ===== 행별 HTML 생성 =====
+cards_html_row1 = build_cards(ROW1_KEYS)
+cards_html_row2 = build_cards(ROW2_KEYS)
 
 # ---------- one-shot render (with hover arrows) ----------
 st_html(f"""
@@ -124,8 +128,10 @@ st_html(f"""
     --thumb-h: 220px;
   }}
   body {{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto; }}
-  .zone {{ margin: 8px 0 18px 0; padding: 0 6px; }}
-  .zone-title {{ font-weight: 800; opacity:.85; margin: 0 0 8px 6px; }}
+  
+  /* zone 간격 조정 */
+  .zone {{ margin: 8px 0 32px 0; padding: 0 6px; }}
+  .zone-title {{ font-weight: 800; opacity:.85; margin: 0 0 12px 6px; font-size: 1.1rem; }}
 
   /* 컨테이너(오버레이 화살표 포함) */
   .scroll-wrap {{
@@ -183,6 +189,7 @@ st_html(f"""
     background: linear-gradient(to var(--side), rgba(255,255,255,0.12), rgba(255,255,255,0));
     pointer-events: auto;
     opacity: 0; transition: opacity .2s ease;
+    cursor: pointer;
   }}
   .scroll-wrap:hover .arrow {{ opacity: 1; }}
 
@@ -202,71 +209,89 @@ st_html(f"""
 <body>
 
 <div class="zone">
-  <div class="zone-title">서비스</div>
-
+  <div class="zone-title">대시보드&인사이트</div>
   <div class="scroll-wrap">
-    <div id="row1" class="row-scroll">
-      {cards_html}
+    <div class="row-scroll">
+      {cards_html_row1}
     </div>
+    <div class="arrow arrow-left"  title="왼쪽으로"><div class="chev">◀</div></div>
+    <div class="arrow arrow-right" title="오른쪽으로"><div class="chev">▶</div></div>
+  </div>
+</div>
 
-    <!-- 좌/우 화살표 -->
-    <div class="arrow arrow-left"  data-dir="-1" title="왼쪽으로">
-      <div class="chev">◀</div>
+<div class="zone">
+  <div class="zone-title">데이터 분석도구</div>
+  <div class="scroll-wrap">
+    <div class="row-scroll">
+      {cards_html_row2}
     </div>
-    <div class="arrow arrow-right" data-dir="1"  title="오른쪽으로">
-      <div class="chev">▶</div>
-    </div>
+    <div class="arrow arrow-left"  title="왼쪽으로"><div class="chev">◀</div></div>
+    <div class="arrow arrow-right" title="오른쪽으로"><div class="chev">▶</div></div>
   </div>
 </div>
 
 <script>
 (function() {{
-  const row = document.getElementById('row1');
-  if (!row) return;
+  // 모든 row-scroll 요소에 대해 개별적으로 동작 바인딩
+  const rows = document.querySelectorAll('.row-scroll');
+  
+  rows.forEach(row => {{
+    const wrap = row.parentElement;
+    const left = wrap.querySelector('.arrow-left');
+    const right = wrap.querySelector('.arrow-right');
 
-  const wrap = row.parentElement;
-  const left = wrap.querySelector('.arrow-left');
-  const right = wrap.querySelector('.arrow-right');
+    // hover 자동 스크롤
+    let hoverTimer = null;
+    function startHover(dir) {{
+      stopHover();
+      hoverTimer = setInterval(() => {{
+        row.scrollBy({{ left: dir * 12, behavior: 'smooth' }});
+      }}, 16);
+    }}
+    function stopHover() {{
+      if (hoverTimer) {{ clearInterval(hoverTimer); hoverTimer = null; }}
+    }}
 
-  // hover 자동 스크롤 (부드럽게)
-  let hoverTimer = null;
-  function startHover(dir) {{
-    stopHover();
-    hoverTimer = setInterval(() => {{
-      row.scrollBy({{ left: dir * 12, behavior: 'smooth' }});
-    }}, 16); // 약 60fps
-  }}
-  function stopHover() {{
-    if (hoverTimer) {{ clearInterval(hoverTimer); hoverTimer = null; }}
-  }}
+    if (left && right) {{
+        left.addEventListener('mouseenter', () => startHover(-1));
+        right.addEventListener('mouseenter', () => startHover(1));
+        left.addEventListener('mouseleave', stopHover);
+        right.addEventListener('mouseleave', stopHover);
 
-  left.addEventListener('mouseenter', () => startHover(-1));
-  right.addEventListener('mouseenter', () => startHover(1));
-  left.addEventListener('mouseleave', stopHover);
-  right.addEventListener('mouseleave', stopHover);
+        // 클릭 점프
+        left.addEventListener('click',  () => row.scrollBy({{ left: -320, behavior: 'smooth' }}));
+        right.addEventListener('click', () => row.scrollBy({{ left:  320, behavior: 'smooth' }}));
+    }}
 
-  // 클릭 시 큰 폭으로 점프
-  left.addEventListener('click',  () => row.scrollBy({{ left: -320, behavior: 'smooth' }}));
-  right.addEventListener('click', () => row.scrollBy({{ left:  320, behavior: 'smooth' }}));
+    // 화살표 상태 업데이트
+    function updateArrows() {{
+      const atStart = row.scrollLeft <= 0;
+      const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 1;
+      
+      if (left) {{
+        left.style.pointerEvents  = atStart ? 'none' : 'auto';
+        left.style.opacity        = atStart ? '0.25' : '';
+      }}
+      if (right) {{
+        right.style.pointerEvents = atEnd   ? 'none' : 'auto';
+        right.style.opacity       = atEnd   ? '0.25' : '';
+      }}
+    }}
+    
+    row.addEventListener('scroll', updateArrows);
+    // 초기화 시 한 번 실행
+    updateArrows();
+  }});
 
-  // 처음/끝에선 화살표 흐리게
-  function updateArrows() {{
-    const atStart = row.scrollLeft <= 0;
-    const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 1;
-    left.style.pointerEvents  = atStart ? 'none' : 'auto';
-    left.style.opacity        = atStart ? '0.25' : '';
-    right.style.pointerEvents = atEnd   ? 'none' : 'auto';
-    right.style.opacity       = atEnd   ? '0.25' : '';
-  }}
-  row.addEventListener('scroll', updateArrows);
-  window.addEventListener('resize', updateArrows);
-  setTimeout(updateArrows, 0);
+  window.addEventListener('resize', () => {{
+    rows.forEach(row => row.dispatchEvent(new Event('scroll')));
+  }});
 }})();
 </script>
 
 </body>
 </html>
-""", height=460, scrolling=False)
+""", height=900, scrolling=False) # 높이 조정: 카드 2줄이므로 여유있게
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
