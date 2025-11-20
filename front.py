@@ -48,7 +48,7 @@ APP_META = {
 
 # ===== 카드 배치 구성 (1행에 신규 카드 추가) =====
 ROW1_KEYS = ["dashboard", "weekly_brief", "actorwiki", "insightwiki"]
-ROW2_KEYS = ["ytcb", "ytcc", "ytif"]
+ROW2_KEYS = ["ytcb", "ytcc"]
 
 def url_of(k: str) -> str:
     try:
