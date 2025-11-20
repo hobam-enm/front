@@ -42,11 +42,12 @@ APP_META = {
     "ytcc":        {"title": "🔎 유튜브 댓글 수집기",    "desc": "유튜브 댓글 수집 및 정량 시각화"},
     "insightwiki": {"title": "💡 인사이트위키",          "desc": "주제별 드라마 인사이트 분석"},
     "actorwiki":   {"title": "💡 배우위키",              "desc": "주요 배우 프로필 및 반응분석"},
-    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},  # 신규 카드
+    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},  
+    "wbriefing":   {"title": "📝 주간 시청자 브리핑",  "desc": "준비 중 (Coming Soon)"}, 
 }
 
 # ===== 카드 배치 구성 변경 (2개 행으로 분리) =====
-ROW1_KEYS = ["dashboard", "actorwiki", "insightwiki"]
+ROW1_KEYS = ["dashboard", "wbriefing","actorwiki", "insightwiki"]
 ROW2_KEYS = ["ytcb", "ytcc", "ytif"]
 
 def url_of(k: str) -> str:
