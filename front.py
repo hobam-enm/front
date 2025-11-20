@@ -43,11 +43,11 @@ APP_META = {
     "insightwiki": {"title": "💡 인사이트위키",          "desc": "주제별 드라마 인사이트 분석"},
     "actorwiki":   {"title": "💡 배우위키",              "desc": "주요 배우 프로필 및 반응분석"},
     "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},
-    "weekly_brief":{"title": "📝 주간 시청자 브리핑",    "desc": "IP별 주간 시청자반응 브리핑"},  # 신규 더미 카드
+    "weekly_brief":{"title": "📝 주간 시청자 브리핑",    "desc": "IP별 주간 시청자반응 브리핑"},  
 }
 
 # ===== 카드 배치 구성 (1행에 신규 카드 추가) =====
-ROW1_KEYS = ["dashboard", "actorwiki", "insightwiki", "weekly_brief"]
+ROW1_KEYS = ["dashboard", "weekly_brief", "actorwiki", "insightwiki"]
 ROW2_KEYS = ["ytcb", "ytcc", "ytif"]
 
 def url_of(k: str) -> str:
