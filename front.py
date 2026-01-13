@@ -86,7 +86,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown("<div class='grad-title'>드라마 데이터 포털</div>", unsafe_allow_html=True)
-st.markdown("<div class='grad-sub'>문의: 미디어)디지털마케팅팀 데이터파트</div>", unsafe_allow_html=True)
+st.markdown("<div class='grad-sub'>문의: 미디어)마케팅팀 데이터파트</div>", unsafe_allow_html=True)
 st.write("")
 
 # ---------- build cards ----------
