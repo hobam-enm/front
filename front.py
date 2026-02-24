@@ -40,9 +40,7 @@ APP_META = {
     "dashboard":   {"title": "📊 드라마 대시보드",      "desc": "드라마 성과데이터 한눈에 비교하기"},
     "ytcb":        {"title": "💬 유튜브 댓글 분석 AI챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
     "ytcc":        {"title": "🔎 유튜브 댓글 수집기",    "desc": "유튜브 댓글 수집 및 정량 시각화"},
-    "insightwiki": {"title": "💡 (구)인사이트위키",          "desc": "주제별 드라마 인사이트 분석"},
-    "actorwiki":   {"title": "💡 (구)배우위키",              "desc": "주요 배우 프로필 및 반응분석"},
-    "ytif":        {"title": "🔭 유튜브 인사이트파인더",  "desc": "준비 중 (Coming Soon)"},
+    "ytif":        {"title": "🔭 유튜브 PGC데이터 트래커",  "desc": "PGC영상의 데모그래픽 분포 등 다양한 통계 확인"},
     "weekly_brief":{"title": "📝 주간 시청자 브리핑",    "desc": "IP별 주간 시청자반응 브리핑"},  
     "dpaa":{"title": "📚 드라마 사전분석 아카이브",    "desc": "IP별 다양한 관점의 인사이트 분석"},  
 }
