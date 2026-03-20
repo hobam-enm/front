@@ -4,7 +4,7 @@ from streamlit.components.v1 import html as st_html
 
 
 # ---------- page ----------
-st.set_page_config(page_title="드라마 마케팅 데이터·인사이트 포털", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="드라마 마케팅 대시보드", page_icon="🧭", layout="wide")
 
 # ---------- auth gate ----------
 PW_SECRET = st.secrets.get("auth", {}).get("frontpage_password")
@@ -24,7 +24,7 @@ if TOKEN_SECRET and _qs and hmac.compare_digest(str(_qs), str(TOKEN_SECRET)):
     st.session_state["_authed"] = True
 
 if not st.session_state.get("_authed", False):
-    st.markdown("### 🔐 드라마 마케팅 데이터·인사이트 포털 접근 권한 필요")
+    st.markdown("### 🔐 드라마 마케팅 대시보드 접근 권한 필요")
     pw = st.text_input("비밀번호를 입력하세요", type="password", placeholder="••••••••")
     if st.button("입장"):
         if PW_SECRET and hmac.compare_digest(str(pw), str(PW_SECRET)):
@@ -37,7 +37,7 @@ if not st.session_state.get("_authed", False):
 # ---------- meta ----------
 # ===== 서비스 메타데이터 설정 =====
 APP_META = {
-    "dashboard":   {"title": "📊 드라마 대시보드",      "desc": "드라마 성과데이터 한눈에 비교하기"},
+    "dashboard":   {"title": "📊 데이터 대시보드",      "desc": "드라마 성과데이터 한눈에 비교하기"},
     "ytcb":        {"title": "💬 유튜브 댓글 분석 AI챗봇", "desc": "드라마 유튜브 반응 AI분석/대화"},
     "ytcc":        {"title": "🔭 유튜브 PGC데이터 트래커",  "desc": "PGC영상의 데모 분포 등 다양한 통계 확인"},
     "weekly_brief":{"title": "📝 주간 시청자 브리핑",    "desc": "IP별 주간 시청자반응 브리핑"},  
@@ -82,7 +82,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown("<div class='grad-title'>드라마 마케팅 데이터 포털</div>", unsafe_allow_html=True)
+st.markdown("<div class='grad-title'>드라마 마케팅 대시보드</div>", unsafe_allow_html=True)
 st.markdown("<div class='grad-sub'>문의: 미디어)마케팅팀 데이터인사이트파트</div>", unsafe_allow_html=True)
 st.write("")
 
@@ -294,4 +294,4 @@ st_html(f"""
 
 # ---------- footer ----------
 st.markdown("<hr style='margin-top:30px; opacity:.2;'>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; opacity:.65;'>© 드라마 마케팅 데이터 포털</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:.65;'>© 드라마 마케팅 대시보드</p>", unsafe_allow_html=True)
