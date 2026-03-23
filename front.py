@@ -129,23 +129,26 @@ st_html(f"""
   body {{ margin:0; padding:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto; }}
   
   /* zone 간격 조정 */
-  .zone {{ margin: 8px 0 32px 0; padding: 0 6px; }}
-  .zone-title {{ font-weight: 800; opacity:.85; margin: 0 0 12px 6px; font-size: 1.1rem; }}
+    .zone {{ margin: 8px 0 32px 0; padding: 0 6px; }}
+    /* 섹션 제목(대시보드&인사이트 등)을 가운데 정렬하기 위해 text-align: center를 추가하고 왼쪽 마진을 제거합니다. */
+    .zone-title {{ font-weight: 800; opacity:.85; margin: 0 0 12px 0; font-size: 1.1rem; text-align: center; }}
 
-  /* 컨테이너(오버레이 화살표 포함) */
-  .scroll-wrap {{
-    position: relative;
-  }}
+    /* 컨테이너(오버레이 화살표 포함) */
+    .scroll-wrap {{
+      position: relative;
+    }}
 
-  /* 1행 수평 스크롤 영역 */
-  .row-scroll {{
-    display: flex;
-    gap: 24px;
-    overflow-x: auto; overflow-y: hidden;
-    padding: 8px 4px 18px 4px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;           /* Firefox */
-  }}
+    /* 1행 수평 스크롤 영역 */
+    .row-scroll {{
+      display: flex;
+      /* 내부 카드들을 중앙으로 배치하기 위해 justify-content: center를 추가합니다. */
+      justify-content: center;
+      gap: 24px;
+      overflow-x: auto; overflow-y: hidden;
+      padding: 8px 4px 18px 4px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;           /* Firefox */
+    }}
   .row-scroll::-webkit-scrollbar {{ display: none; }} /* WebKit */
 
   /* 플로팅 카드 */
